@@ -1,11 +1,14 @@
 import { useGyroscope } from "./useGyroscope";
 
 function App() {
-  const values = useGyroscope();
+  const { deviceOrientation, requestPermission } = useGyroscope();
 
   return (
     <div className="text-lg">
-      <pre>{JSON.stringify(values, null, 2)}</pre>
+      <h1>
+        <button onClick={() => requestPermission()}>request permissions</button>
+      </h1>
+      <pre>{JSON.stringify(deviceOrientation, null, 2)}</pre>
     </div>
   );
 }

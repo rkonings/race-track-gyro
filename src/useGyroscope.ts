@@ -1,72 +1,41 @@
-import { useEffect, useState } from 'react'
+// @ts-nocheck - may need to be at the start of file
+import { useState } from 'react'
 
-export const useGyroscope = ({ frequency }: {frequency: number} = {frequency: 60}) => {
-
-  const [angularVelocity, setAngularVelocity] = useState({
-    x: 0,
-    y: 0,
-    z: 0,
-    rotation: {
-      alpha: 0,
-      beta: 0,
-      gamma: 0
-    },
-    landscape: false
-  }
-)
-
-  useEffect(() => {
-
-const handleOrientation = () => {
-    var orientation = window.orientation;
-    setAngularVelocity({...angularVelocity, landscape: orientation === 90 || orientation === -90 });
-  }
-
-  const handleAcceleration = (event: any) => {
-    var acceleration = event.accelerationIncludingGravity;
-    var rotation = event.rotationRate || 0;
-    var x = acceleration.x;
-    var y = acceleration.y;
-    var z = acceleration.z;
-    setAngularVelocity({
-        ...angularVelocity,
-      rotation: rotation,
-      x: angularVelocity.landscape ? y : x,
-      y: angularVelocity.landscape ? x : y,
-      z: z,
-    });
-  }
-
-    if (typeof (DeviceMotionEvent as any).requestPermission === 'function') {
-        (DeviceMotionEvent as any).requestPermission()
-          .then((permissionState: any) => {
-            if (permissionState === 'granted') {
-              window.addEventListener('devicemotion', handleOrientation);
-            }
-          })
-          .catch(console.error);
-      } else {
-        // handle regular non iOS 13+ devices
-        window.addEventListener('devicemotion', handleAcceleration);
-      }
-      if (typeof (DeviceOrientationEvent as any).requestPermission === 'function') {
-        (DeviceOrientationEvent as any).requestPermission()
-          .then((permissionState: any) => {
-            if (permissionState === 'granted') {
-              window.addEventListener('deviceorientation', handleOrientation);
-            }
-          })
-          .catch(console.error);
-      } else {
-        window.addEventListener('orientationchange', handleOrientation);
-      }
+export const useGyroscope = () => {
+    const [deviceOrientation, setDeviceOrientation] = useState({})
     
-    return () => {
-        window.removeEventListener('devicemotion', handleAcceleration);
-        window.removeEventListener('orientationchange', handleOrientation);
+    function handleOrientation(event) {
+        const alpha = event.alpha;
+        const beta = event.beta;
+        const gamma = event.gamma;
 
-    }
-  }, [angularVelocity, frequency])
+        setDeviceOrientation({alpha, beta, gamma})
+        // Do stuff...
+      }
 
-  return angularVelocity
+    function requestPermission() {
+        console.log('request Permission')
+        if (typeof DeviceMotionEvent.requestPermission === 'function') {
+          // Handle iOS 13+ devices.
+          DeviceMotionEvent.requestPermission()
+            .then((state) => {
+              if (state === 'granted') {
+                
+                window.addEventListener('devicemotion', handleOrientation);
+              } else {
+                console.error('Request to access the orientation was rejected');
+              }
+              console.log('state', state)
+            })
+            .catch(console.error);
+        } else {
+
+          console.log('add listener')
+          // Handle regular non iOS 13+ devices.
+          window.addEventListener('devicemotion', handleOrientation);
+        }
+      }
+
+
+  return {requestPermission, deviceOrientation}
 }
