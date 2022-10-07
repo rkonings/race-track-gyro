@@ -1,5 +1,13 @@
+import { useGyroscope } from "./useGyroscope";
+
 function App() {
-  return <div className="text-lg">Race</div>;
+  const values = useGyroscope();
+
+  return (
+    <div className="text-lg">
+      <pre>{JSON.stringify(values, null, 2)}</pre>
+    </div>
+  );
 }
 
 export default App;
